@@ -117,7 +117,7 @@ PallyPower.options = {
 					type = "range",
 					desc = L["DISPCOL_DESC"],
 					min = 1,
-					max = 11,
+					max = 10,
 					step = 1,
 					get = "displayColumns",
 					set = "displayColumns",	
@@ -127,7 +127,7 @@ PallyPower.options = {
 					type = "range",
 					desc = L["DISPROWS_DESC"],
 					min = 1,
-					max = 11,
+					max = 10,
 					step = 1,
 					get = "displayRows",
 					set = "displayRows",	
@@ -197,6 +197,39 @@ PallyPower.options = {
 					desc = L["HIDECB_DESC"],
 					get = "ToggleClassButtons",
 					set = "ToggleClassButtons",
+					map = {
+						[false]=L["DISABLED"],
+						[true] = L["ENABLED"]
+					},
+				},
+				blink = {
+					name = L["BLINKPA"],
+					type = "toggle",
+					desc = L["BLINKPA_DESC"],
+					get = "ToggleFlashBuffAutoButtons",
+					set = "ToggleFlashBuffAutoButtons",
+					map = {
+						[false]=L["DISABLED"],
+						[true] = L["ENABLED"]
+					},
+				},
+				classcolor = {
+					name = L["CLASSC"],
+					type = "toggle",
+					desc = L["CLASSC_DESC"],
+					get = "ToggleClassColor",
+					set = "ToggleClassColor",
+					map = {
+						[false]=L["DISABLED"],
+						[true] = L["ENABLED"]
+					},
+				},
+				nameclasscolor = {
+					name = L["CLASSCN"],
+					type = "toggle",
+					desc = L["CLASSCN_DESC"],
+					get = "ToggleNameClassColor",
+					set = "ToggleNameClassColor",
 					map = {
 						[false]=L["DISABLED"],
 						[true] = L["ENABLED"]
@@ -478,6 +511,24 @@ function PallyPower:ToggleClassButtons(value)
 	if type(value) == "nil" then return self.opt.hideClassButtons end
 	self.opt.hideClassButtons = value;
 	PallyPower:UpdateLayout();	
+end
+
+function PallyPower:ToggleFlashBuffAutoButtons(value)
+	if type(value) == "nil" then return self.opt.flashBuffAutoButtons end
+	self.opt.flashBuffAutoButtons = value;
+	PallyPower:UpdateLayout();
+end
+
+function PallyPower:ToggleClassColor(value)
+	if type(value) == "nil" then return self.opt.classColor end
+	self.opt.classColor = value;
+	PallyPower:UpdateLayout();
+end
+
+function PallyPower:ToggleNameClassColor(value)
+	if type(value) == "nil" then return self.opt.nameClassColor end
+	self.opt.nameClassColor = value;
+	PallyPower:UpdateLayout();
 end
 
 function PallyPower:ToggleAutoButton(value)

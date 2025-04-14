@@ -9,6 +9,7 @@ local tsort = table.sort
 local sfind = string.find
 local ssub = string.sub
 local sformat = string.format
+local IsInInstance = IsInInstance
 
 local classlist, classes = {}, {}
 LastCast = {}
@@ -425,7 +426,7 @@ function PallyPowerConfigGrid_Update()
 			getglobal(fname .. "Symbols"):SetTextColor(1,1,0.5)
 			
 			-- display the rank/talents for the blessings...
-			for id = 1, 4 do
+			for id = 1, 6 do
 				if SkillInfo[id] then
 					getglobal(fname.."Icon"..id):Show()
 					getglobal(fname.."Skill"..id):Show()
@@ -439,10 +440,10 @@ function PallyPowerConfigGrid_Update()
 					getglobal(fname.."Skill"..id):Hide()
 				end
 			end
-			for id = 5, 6 do
+			--[[for id = 5, 6 do
 				getglobal(fname.."Icon"..id):Hide()
 				getglobal(fname.."Skill"..id):Hide()
-			end
+			end]]
 			
 			-- display the rank/talents for only the 3 primary auras (devotion, retribution, concentration)
 			if not AllPallys[name].AuraInfo then
@@ -518,7 +519,7 @@ function PallyPower:Report(type)
 			local list = {}
 			for name in pairs(AllPallys) do
 				local blessings
-				for i = 1, 4 do
+				for i = 1, 6 do
 					list[i] = 0
 				end
 				for id = 1, PALLYPOWER_MAXCLASSES do
@@ -527,7 +528,7 @@ function PallyPower:Report(type)
 						list[bid] = list[bid] + 1
 					end
 				end
-				for id = 1, 4 do
+				for id = 1, 6 do
 					if (list[id] > 0) then
 						if (blessings) then
 							blessings = blessings .. ", "
@@ -555,7 +556,7 @@ end
 function PallyPower:PerformCycle(name, class, skipzero)
 	local shift = IsShiftKeyDown()
 
-	if shift then class = 7 end
+	if shift then class = 4 end
 
 	if not PallyPower_Assignments[name] then
 		PallyPower_Assignments[name] = { }
@@ -598,7 +599,7 @@ end
 function PallyPower:PerformCycleBackwards(name, class, skipzero)
 	local shift=IsShiftKeyDown()
 
-	if shift then class=7 end
+	if shift then class=4 end
 
 	if not PallyPower_Assignments[name] then
 		PallyPower_Assignments[name] = { }
@@ -638,9 +639,9 @@ function PallyPower:PerformPlayerCycle(arg1, pname, class)
 		blessing = PallyPower_NormalAssignments[playername][class][pname]
 	end
 
-	local test = (blessing - arg1) % 5
+	local test = (blessing - arg1) % 7
 	while not (PallyPower:CanBuff(playername, test) and PallyPower:NeedsBuff(class, test, pname)) and test > 0 do
-		test = (test - arg1) % 5
+		test = (test - arg1) % 7
 		if test == blessing then
 			test = 0
 			break
@@ -708,13 +709,13 @@ function PallyPower:AssignPlayerAsClass(pname, pclass, tclass)
 end
 
 function PallyPower:CanBuff(name, test)
-	-- if test==7 then
-	-- 	return true
-	-- end
+	if test==7 then
+		return true
+	end
 
-	-- if (not AllPallys[name][test]) or (AllPallys[name][test].rank == 0) then
-	-- 	return false
-	-- end
+	if (not AllPallys[name][test]) or (AllPallys[name][test].rank == 0) then
+		return false
+	end
 	return true
 end
 
@@ -765,8 +766,13 @@ function PallyPower:ScanSpells()
 	local _, class=UnitClass("player")
 	if (class == "PALADIN") then
 		local RankInfo = {}
-		for i = 1, 4 do -- find max spell ranks
+		for i = 1, 6 do -- find max spell ranks
 			local spellName, spellRank = GetSpellInfo(PallyPower.GSpells[i])
+			-- TBC case for kings for Onyxia TBC. Spell showing as known even if talent not selected.
+			if i == 3 then
+				local kingsTalent = select(5, GetTalentInfo(2, 6))
+				if kingsTalent == 0 then spellName = nil end
+			end
 			if not spellName then -- fallback to lower blessings
 				spellName, spellRank = GetSpellInfo(PallyPower.Spells[i])
 			end
@@ -782,7 +788,7 @@ function PallyPower:ScanSpells()
 				if i == 1 then  -- wisdom
 					talent = talent + select(5, GetTalentInfo(1, 10))
 				elseif i == 2 then -- might
-			    	talent = talent + select(5, GetTalentInfo(3, 5))
+			    	talent = talent + select(5, GetTalentInfo(3, 1))
 			    --elseif i == 3 then -- kings
 			    --	talent = talent + select(5, GetTalentInfo(2, 2))
 				end
@@ -810,11 +816,11 @@ function PallyPower:ScanSpells()
 					-- Lach22Mar08: Prot talent tree appears to be out-of-sync... 
 					-- Imp Dev. Aura should be 10, but wont return correct value unless 11 is used for the index...
 					-- I assume that they will correct if before release... 
-					talent = talent + select(5, GetTalentInfo(2, 11)) -- Improved Devotion Aura
+					talent = talent + select(5, GetTalentInfo(2, 1)) -- Improved Devotion Aura
 				elseif i == 2 then
-			    	talent = talent + select(5, GetTalentInfo(3, 14))  -- Sanctified Retribution
+			    	talent = talent + select(5, GetTalentInfo(3, 11))  -- Improved Retribution Aura
 			    elseif i == 3 then
-			    	talent = talent + select(5, GetTalentInfo(1, 9))  -- Improved Concentration Aura
+			    	talent = talent + select(5, GetTalentInfo(2, 12))  -- Improved Concentration Aura
 				end
 
 				AllPallys[self.player].AuraInfo[i].talent = talent
@@ -855,7 +861,7 @@ function PallyPower:SendSelf()
 
 	local SkillInfo = AllPallys[self.player]
 	s = ""
-	for i = 1, 4 do
+	for i = 1, 6 do
 		if not SkillInfo[i] then
 			s = s.."nn"
 		else
@@ -1824,6 +1830,10 @@ function PallyPower:UpdateLayout()
 		end
 	end
 
+	if not self.opt.flashBuffAutoButtons then
+		self:StopAllAnimation()
+	end
+
 	self:ButtonsUpdate()
 	self:UpdateAnchor(displayedButtons)
 
@@ -1871,8 +1881,109 @@ function PallyPower:SetPButton(baseName)
 	end
 end
 
+-- NoM0Re Edit
+function PallyPower:GetClassColor(classFilename, fallback)
+    local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[classFilename]
+    if color and color.r and color.g and color.b then
+        return { r = color.r, g = color.g, b = color.b, a = 1}
+    end
+	if classFilename == "PET" then
+		return { r = 1, g = 1, b = 0, a = 1}
+	end
+    -- Fallback
+    return fallback
+end
+
+local AnimatedButtons = {}
+local startTimeAnimation
+local AnimationUpdateFrame = CreateFrame("Frame")
+local hsvFrame = CreateFrame("Colorselect")
+
+local function GetHSVTransition(perc, r1, g1, b1, a1, r2, g2, b2, a2)
+	--get hsv color for colorA
+	hsvFrame:SetColorRGB(r1, g1, b1)
+	local h1, s1, v1 = hsvFrame:GetColorHSV() -- hue, saturation, value
+	--get hsv color for colorB
+	hsvFrame:SetColorRGB(r2, g2, b2)
+	local h2, s2, v2 = hsvFrame:GetColorHSV() -- hue, saturation, value
+	local h3 = floor(h1 - (h1 - h2) * perc)
+	-- find the shortest arc through the color circle, then interpolate
+	local diff = h2 - h1
+	if diff < -180 then
+		diff = diff + 360
+	elseif diff > 180 then
+		diff = diff - 360
+	end
+	h3 = (h1 + perc * diff) % 360
+	local s3 = s1 - ( s1 - s2 ) * perc
+	local v3 = v1 - ( v1 - v2 ) * perc
+	--get the RGB values of the new color
+	hsvFrame:SetColorHSV(h3, s3, v3)
+	local r, g, b = hsvFrame:GetColorRGB()
+	--interpolate alpha
+	local a = a1 - ( a1 - a2 ) * perc
+	--return the new color
+	return r, g, b, a
+end
+
+local function UpdateFrameColor(progress, frame)
+	local r1, g1, b1, a1 = PallyPower.opt.cBuffNeedAll.r, PallyPower.opt.cBuffNeedAll.g, PallyPower.opt.cBuffNeedAll.b, PallyPower.opt.cBuffNeedAll.t -- Start-Color White
+	local r2, g2, b2, a2 = 1, 0, 0, 1  -- End-Color Red
+	local r, g, b, a = GetHSVTransition(progress, r1, g1, b1, a1, r2, g2, b2, a2)
+	frame:SetBackdropColor(r, g, b, a)
+end
+
+local function GetAnimationFrameProgress(startTime)
+	local currentTime = GetTime()
+	local duration = 0.5
+	return (currentTime - startTime) / duration
+end
+
+local function UpdateFrame()
+	local progress = GetAnimationFrameProgress(startTimeAnimation)
+	for _, frame in ipairs(AnimatedButtons) do
+		UpdateFrameColor(progress, frame)
+	end
+	if progress >= 1 then
+		startTimeAnimation = GetTime()
+	end
+end
+
+local function StartAnimation(button)
+	if AnimatedButtons and next(AnimatedButtons) == nil then
+		startTimeAnimation = GetTime()
+		table.insert(AnimatedButtons, button)
+		AnimationUpdateFrame:SetScript("OnUpdate", UpdateFrame)
+	else
+		for _, btn in ipairs(AnimatedButtons) do
+			if btn:GetName() == button:GetName() then
+				return
+			end
+		end
+        table.insert(AnimatedButtons, button)
+	end
+end
+
+local function StopAnimation(button)
+    for i, btn in ipairs(AnimatedButtons) do
+        if btn:GetName() == button:GetName() then
+			table.remove(AnimatedButtons, i)
+            break
+        end
+    end
+
+    if AnimatedButtons and next(AnimatedButtons) == nil then
+        AnimationUpdateFrame:SetScript("OnUpdate", nil)
+    end
+end
+
+function PallyPower:StopAllAnimation()
+	AnimatedButtons = {}
+	AnimationUpdateFrame:SetScript("OnUpdate", nil)
+end
+-- NoM0Re Edit End
 function PallyPower:UpdateButton(button, baseName, classID)
---    self:Print("Update Button: %s, Class: %s", baseName, classID)
+	--self:Print("Update Button: %s, Class: %s", baseName, classID)
 	local button = _G[baseName]
 	local classIcon = _G[baseName.."ClassIcon"]
 	local buffIcon = _G[baseName.."BuffIcon"]
@@ -1926,19 +2037,68 @@ function PallyPower:UpdateButton(button, baseName, classID)
 	else
 		text:SetText("")
 	end
+	-- NoM0Re Edit
+	if (not InCombatLockdown()) then
+		local unitid, _, gspell = PallyPower:GetUnitAndSpellSmart(classID, "LeftButton")
 
-	if (nhave == 0) then
-		self:ApplyBackdrop(button, self.opt.cBuffNeedAll)
-	elseif (nneed > 0) then
- 		self:ApplyBackdrop(button, self.opt.cBuffNeedSome)
-	elseif (nspecial > 0) then
-  		self:ApplyBackdrop(button, self.opt.cBuffNeedSpecial)
-	else
-  		self:ApplyBackdrop(button, self.opt.cBuffGood)
+		if not unitid then
+			gspell = "qq"
+		end
+
+		-- left click (find first nearby player and do 15 minute buff)
+		button:SetAttribute("type", "spell")
+		button:SetAttribute("spell1", gspell)
+		button:SetAttribute("unit1", unitid)
 	end
 
+	local flash = self.opt.flashBuffAutoButtons
+	local instanced = IsInInstance()
+	if (nhave == 0) then
+		if flash then
+			if instanced then
+				StartAnimation(button)
+			else
+				StopAnimation(button)
+				self:ApplyBackdrop(button, self.opt.cBuffNeedAll)
+			end
+		else
+			self:ApplyBackdrop(button, self.opt.cBuffNeedAll)
+		end
+	elseif (nneed > 0) then
+		if flash then
+			if instanced then
+				StartAnimation(button)
+			else
+				StopAnimation(button)
+				self:ApplyBackdrop(button, self.opt.cBuffNeedSome)
+			end
+		else
+			self:ApplyBackdrop(button, self.opt.cBuffNeedSome)
+		end
+	elseif (nspecial > 0) then
+		if flash then
+			if instanced then
+				StartAnimation(button)
+			else
+				StopAnimation(button)
+				self:ApplyBackdrop(button, self.opt.cBuffNeedSpecial)
+			end
+		else
+			self:ApplyBackdrop(button, self.opt.cBuffNeedSpecial)
+		end
+	else
+		if flash then
+			StopAnimation(button)
+		end
+		if self.opt.classColor then
+			self:ApplyBackdrop(button, self:GetClassColor(self.ClassID[classID], self.opt.cBuffGood))
+		else
+			self:ApplyBackdrop(button, self.opt.cBuffGood)
+		end
+	end
+	-- NoM0Re Edit End
 	return classExpire, classDuration, specialExpire, specialDuration, nhave, nneed, nspecial
---    self:Print("Update button -- end")
+	--self:Print("Update button -- end")
 end
 
 function PallyPower:GetSeverityColor(percent)
@@ -2062,8 +2222,14 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID)
 		--elseif (nneed == 1) then
 		--    button:SetBackdropColor(1.0, 1.0, 0.5, 0.5)
 		else
-   			self:ApplyBackdrop(button, self.opt.cBuffGood)
-		end	
+			-- NoM0Re Edit
+			if self.opt.classColor then
+				self:ApplyBackdrop(button, self:GetClassColor(self.ClassID[classID], self.opt.cBuffGood))
+			else
+				self:ApplyBackdrop(button, self.opt.cBuffGood)
+			end
+			-- NoM0Re Edit End
+		end
 
 		if unit.hasbuff then
 			buffIcon:SetAlpha(1)
@@ -2095,6 +2261,12 @@ function PallyPower:UpdatePButton(button, baseName, classID, playerID)
 			end
 		end
 		name:SetText(unit.name)
+
+		if self.opt.nameClassColor then
+			self:ApplyTextColor(name, PallyPower:GetClassColor(self.ClassID[classID], {r=1, g=1, b=1, t=1}))
+		else
+			self:ApplyTextColor(name, {r=1, g=1, b=1, t=1})
+		end
 	else
 		self:ApplyBackdrop(button, self.opt.cBuffGood)
 		buffIcon:SetAlpha(0)
@@ -2134,16 +2306,49 @@ function PallyPower:ButtonsUpdate()
 	local time = _G["PallyPowerAutoTime"]
 	local time2 = _G["PallyPowerAutoTime2"]
 	local text = _G["PallyPowerAutoText"]
+	-- NoM0Re Edit
+	local flash = self.opt.flashBuffAutoButtons
+	local instanced = IsInInstance()
 	if (sumnhave == 0) then
-  		self:ApplyBackdrop(autobutton, self.opt.cBuffNeedAll)
+		if flash then
+			if instanced then
+				StartAnimation(autobutton)
+			else
+				StopAnimation(autobutton)
+				self:ApplyBackdrop(autobutton, self.opt.cBuffNeedSome)
+			end
+		else
+			self:ApplyBackdrop(autobutton, self.opt.cBuffNeedSome)
+		end
 	elseif (sumnneed > 0) then
-  		self:ApplyBackdrop(autobutton, self.opt.cBuffNeedSome)
+		if flash then
+			if instanced then
+				StartAnimation(autobutton)
+			else
+				StopAnimation(autobutton)
+				self:ApplyBackdrop(autobutton, self.opt.cBuffNeedSome)
+			end
+		else
+			self:ApplyBackdrop(autobutton, self.opt.cBuffNeedSome)
+		end
 	elseif (sumnspecial > 0) then
-		self:ApplyBackdrop(autobutton, self.opt.cBuffNeedSpecial)
+		if flash then
+			if instanced then
+				StartAnimation(autobutton)
+			else
+				StopAnimation(autobutton)
+				self:ApplyBackdrop(autobutton, self.opt.cBuffNeedSpecial)
+			end
+		else
+			self:ApplyBackdrop(autobutton, self.opt.cBuffNeedSpecial)
+		end
 	else
-  		self:ApplyBackdrop(autobutton, self.opt.cBuffGood)
+		if flash then
+			StopAnimation(autobutton)
+		end
+		self:ApplyBackdrop(autobutton, self.opt.cBuffGood)
 	end
-	
+	-- NoM0Re Edit End
 	time:SetText(self:FormatTime(minClassExpire))
 	time:SetTextColor(self:GetSeverityColor(minClassExpire and minClassDuration and (minClassExpire/minClassDuration) or 0))
 	time2:SetText(self:FormatTime(minSpecialExpire))
@@ -2538,6 +2743,11 @@ function PallyPower:ApplyBackdrop(button, preset)
 	button:SetBackdropColor(preset["r"], preset["g"], preset["b"], preset["t"])
 end
 
+-- text coloring: preset
+function PallyPower:ApplyTextColor(fontstring, preset)
+	fontstring:SetTextColor(preset["r"], preset["g"], preset["b"], preset["t"])
+end
+
 function PallyPower:SetSeal(seal)
 	self.opt.seal = seal
 end
@@ -2613,12 +2823,12 @@ function PallyPower:SealAssign(seal)
 end
 
 -- Auto-Assign blessings by Maddeathelf
-local WisdomPallys, MightPallys, KingsPallys,  SancPallys = {}, {}, {}, {}
+local WisdomPallys, MightPallys, KingsPallys, SalvPallys, SancPallys, LightPallys = {}, {}, {}, {}, {}, {}
 
 function PallyPower:AutoAssign()
 
 	PallyPowerConfig_Clear()
-	WisdomPallys, MightPallys, KingsPallys,  SancPallys = {}, {}, {}, {}	
+	WisdomPallys, MightPallys, KingsPallys, SalvPallys, SancPallys, LightPallys = {}, {}, {}, {}, {}, {}
 	PallyPower:AutoAssignBlessings()
 	
 	local precedence = { 1, 3, 2, 4, 5, 6 }	 -- devotion, concentration, retribution, shadow, frost, fire
@@ -2627,7 +2837,7 @@ function PallyPower:AutoAssign()
 end
 
 function PallyPower:CalcSkillRanks1(name)
-	local wisdom, might, kings, sanct
+	local wisdom, might, kings, salv, sanct, light
 	if AllPallys[name][1] then
 		wisdom = tonumber(AllPallys[name][1].rank) + tonumber(AllPallys[name][1].talent)/12
 	else
@@ -2644,12 +2854,22 @@ function PallyPower:CalcSkillRanks1(name)
 		kings = 0
 	end
 	if AllPallys[name][4] then
-		sanct  = tonumber(AllPallys[name][4].rank)
+		salv  = tonumber(AllPallys[name][4].rank)
+	else
+		salv = 0
+	end
+	if AllPallys[name][5] then
+		sanct = tonumber(AllPallys[name][5].rank)
 	else
 		sanct = 0
 	end
+	if AllPallys[name][6] then
+		light = tonumber(AllPallys[name][6].rank)
+	else
+		light = 0
+	end
 	
-	return wisdom, might, kings, sanct
+	return wisdom, might, kings, salv, sanct, light
 end
 
 function PallyPower:AutoAssignBlessings()
@@ -2662,11 +2882,11 @@ function PallyPower:AutoAssignBlessings()
 	
 	if pc == 0 then return end
 	
-	if pc > 4 then pc = 4 end
+	if pc > 6 then pc = 6 end
 	
 	for name in pairs(AllPallys) do	
 		pallycount = pallycount + 1
-		local wisdom, might, kings, sanct = PallyPower:CalcSkillRanks1(name) 
+		local wisdom, might, kings, salv, sanct, light = PallyPower:CalcSkillRanks1(name) 
 		--self:Print("Adding")
 		--self:Print(name, wisdom, might, kings, sanct)
 		if wisdom then
@@ -2681,8 +2901,16 @@ function PallyPower:AutoAssignBlessings()
 			tinsert(KingsPallys, {pallyname = name, skill = kings})
 		end
 		
+		if salv then
+			tinsert(SalvPallys, {pallyname = name, skill = salv})
+		end
+
 		if sanct then
 			tinsert(SancPallys, {pallyname = name, skill = sanct})
+		end
+
+		if light then
+			tinsert(LightPallys, {pallyname = name, skill = light})
 		end
 	end
 	-- get template for the number of available paladins in the raid
@@ -2698,8 +2926,7 @@ function PallyPower:AutoAssignBlessings()
 	PallyPower:SelectBuffsByClass(pallycount, 7, pt[7]) 	-- mage
 	PallyPower:SelectBuffsByClass(pallycount, 8, pt[8]) 	-- lock
 	PallyPower:SelectBuffsByClass(pallycount, 9, pt[9]) 	-- shaman
-	PallyPower:SelectBuffsByClass(pallycount, 10, pt[10]) 	-- dk
-	PallyPower:SelectBuffsByClass(pallycount, 11, pt[11]) 	-- pets
+	PallyPower:SelectBuffsByClass(pallycount, 10, pt[10]) 	-- pets
 end
 
 function PallyPower:SelectBuffsByClass(pallycount, class, prioritylist)
@@ -2736,7 +2963,9 @@ function PallyPower:BuffSelections(buff, class, pallys)
 	if buff == 1 then t = WisdomPallys end
 	if buff == 2 then t = MightPallys end
 	if buff == 3 then t = KingsPallys end
-	if buff == 4 then t = SancPallys end
+	if buff == 4 then t = SalvPallys end
+	if buff == 5 then t = SancPallys end
+	if buff == 6 then t = LightPallys end
 
 	local Buffer = ""
 	local testrank = 0
@@ -2829,7 +3058,7 @@ function PallyPower:PerformAuraCycle(name, skipzero)
 	end
 
 	local cur = PallyPower_AuraAssignments[name]
-
+	
 	for test = cur+1, PALLYPOWER_MAXAURAS do
 		if PallyPower:HasAura(name, test) then
 			cur = test

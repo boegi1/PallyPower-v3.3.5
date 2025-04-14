@@ -3,34 +3,34 @@ local L = AceLibrary("AceLocale-2.2"):new("PallyPower");
 
 PallyPower.commPrefix = "PLPWR";
 
-PALLYPOWER_MAXCLASSES = 11;
+PALLYPOWER_MAXCLASSES = 10;
 PALLYPOWER_MAXPERCLASS = 8;
 PALLYPOWER_NORMALBLESSINGDURATION = 10*60;
 PALLYPOWER_GREATERBLESSINGDURATION = 30*60;
-PALLYPOWER_MAXAURAS = 7;
+PALLYPOWER_MAXAURAS = 8;
 
 PallyPower.CONFIG_DRAGHANDLE = L["DRAGHANDLE"];
 
 PALLYPOWER_DEFAULT_VALUES = {
-	buffscale = 0.90,
-	configscale = 0.90,
+	buffscale = 0.75,
+	configscale = 0.65,
 	smartbuffs = true,
 	smartpets = true,
 	greaterbuffs = true,
-	rfbuff = true,
-	auras = true,
+	rfbuff = false,
+	auras = false,
 	extras = false,
 	autobuff = {
 		autokey1 = ",",
 		autokey2 = "CTRL-,",
 		autobutton = true,
-		waitforpeople = true,
+		waitforpeople = false,
 	},
 	display = {
 		-- buttons
-		rows = 11,
+		rows = 10,
 		columns = 1,
-		gapping = 2,
+		gapping = -1,
 		buttonWidth = 100,
 		buttonHeight = 34,
 		alignClassButtons = "9",
@@ -39,7 +39,10 @@ PALLYPOWER_DEFAULT_VALUES = {
         frameLocked = false,
 		hideDragHandle = false,
 		hidePlayerButtons = false,
-		hideClassButtons = false,
+		hideClassButtons = true,
+		classColor = false,
+		nameClassColor = false,
+		flashBuffAutoButtons = true,
 		PlainButtons = false,
 		HideKeyText = false,
 		HideCount = false,
@@ -56,23 +59,23 @@ PALLYPOWER_DEFAULT_VALUES = {
 	cBuffGood        = {r = 0.0, g = 0.7, b = 0.0, t = 0.5},
 	sets = { 
 		["primary"] = {
-						seal = 0, 	-- wisdom
-						aura = 1, 	-- devotion
+						seal = 1, 	-- wisdom
+						aura = 0, 	-- devotion
 						rf = false, -- RF off
 						buffs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,}
 					},
 		["secondary"] = {
-						seal = 0, 	-- wisdom
-						aura = 1, 	-- devotion
+						seal = 1, 	-- wisdom
+						aura = 0, 	-- devotion
 						rf = false, -- RF off
 						buffs = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,}
 					},
 	},
 	-- default assignments
-	seal = 0,
+	seal = 1,
 	aura = 1,
 	disabled = false,
-	layout = "Standard",
+	layout = "Layout 1",
 	};
 
 PallyPower_Credits1 = "Pally Power - by Aznamir";
@@ -90,8 +93,8 @@ PallyPower.ClassID = {
 	[7] = "MAGE",
 	[8] = "WARLOCK",
 	[9] = "SHAMAN",
-	[10] = "DEATHKNIGHT",
-	[11] = "PET"};
+	[10] = "PET",
+};
 	
 PallyPower.ClassToID = {
 	["WARRIOR"] 	= 1,
@@ -103,8 +106,8 @@ PallyPower.ClassToID = {
 	["MAGE"] 		= 7,
 	["WARLOCK"]		= 8,
 	["SHAMAN"]		= 9,
-	["DEATHKNIGHT"]	= 10,
-	["PET"]			= 11};	
+	["PET"]			= 10,
+};	
 
 PallyPower.ClassIcons = {
 	[1] = "Interface\\AddOns\\PallyPower\\Icons\\Warrior",
@@ -116,26 +119,28 @@ PallyPower.ClassIcons = {
 	[7] = "Interface\\AddOns\\PallyPower\\Icons\\Mage",
 	[8] = "Interface\\AddOns\\PallyPower\\Icons\\Warlock",
 	[9] = "Interface\\AddOns\\PallyPower\\Icons\\Shaman",
-	[10] = "Interface\\AddOns\\PallyPower\\Icons\\DeathKnight",
-	[11] = "Interface\\AddOns\\PallyPower\\Icons\\Pet"};
+	[10] = "Interface\\AddOns\\PallyPower\\Icons\\Pet",
+};
 
 PallyPower.BlessingIcons = {
     [-1] = "",
-	[1] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofWisdom",
-	[2] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofKings",
-	[3] = "Interface\\Icons\\Spell_Magic_GreaterBlessingofKings",
-	[4] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofSalvation",
-	[5] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofSanctuary",
-	[6] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofLight"};
+	[1] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofWisdom", -- Greater Wisdom
+	[2] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofKings", -- Greater Might
+	[3] = "Interface\\Icons\\Spell_Magic_GreaterBlessingofKings", -- Greater Kings
+	[4] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofSalvation", -- Greater Salvation
+	[5] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofSanctuary", -- Greater Sanctuary
+	[6] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofLight", -- Greater Light
+};
 	
 PallyPower.NormalBlessingIcons = {
     [-1] = "",
-	[1] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofWisdom",
-	[2] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofKings",
-	[3] = "Interface\\Icons\\Spell_Magic_GreaterBlessingofKings",
-	[4] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofSalvation",
-	[5] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofSanctuary",
-	[6] = "Interface\\Icons\\Spell_Holy_GreaterBlessingofLight"};
+	[1] = "Interface\\Icons\\Spell_Holy_SealOfWisdom", -- Wisdom
+	[2] = "Interface\\Icons\\Spell_Holy_FistOfJustice", -- Might
+	[3] = "Interface\\Icons\\Spell_Magic_MageArmor", -- Kings
+	[4] = "Interface\\Icons\\Spell_Holy_SealOfSalvation", -- Salvation
+	[5] = "Interface\\Icons\\Spell_Nature_LightningShield", -- Sanctuary
+	[6] = "Interface\\Icons\\Spell_Holy_PrayerOfHealing02", -- Light
+};
 
 PallyPower.AuraIcons = {
     [-1] = "",
@@ -145,7 +150,8 @@ PallyPower.AuraIcons = {
 	[4] = "Interface\\Icons\\Spell_Shadow_SealOfKings",
 	[5] = "Interface\\Icons\\Spell_Frost_WizardMark",
 	[6] = "Interface\\Icons\\Spell_Fire_SealOfFire",
-	[7] = "Interface\\Icons\\Spell_Holy_CrusaderAura",
+	[7] = "Interface\\Icons\\Spell_Holy_MindVision",
+	[8] = "Interface\\Icons\\Spell_Holy_CrusaderAura",
 };
 
 --
@@ -204,7 +210,7 @@ PallyPower.Seals = {
     [1] = GetSpellInfo(20164), -- seal of justice
 	[2] = GetSpellInfo(20165), -- seal of light
     [3] = GetSpellInfo(20166), -- seal of wisdom
-    [4] = GetSpellInfo(21084), -- seal of right
+    [4] = GetSpellInfo(21084), -- seal of righteousness
     [5] = GetSpellInfo(53720), -- seal of martyr
     [6] = GetSpellInfo(31801), -- seal of vengeance
     [7] = GetSpellInfo(20375), -- seal of command
@@ -221,61 +227,82 @@ PallyPower.Auras = {
 	[4] = GetSpellInfo(19876), --BS["Shadow Resistance Aura"],
 	[5] = GetSpellInfo(19888), --BS["Frost Resistance Aura"],
 	[6] = GetSpellInfo(19891), --BS["Fire Resistance Aura"],
-	[7] = GetSpellInfo(32223), --BS["Crusader Aura"],
+	[7] = GetSpellInfo(20218), --BS["Sanctity Aura"],
+	[8] = GetSpellInfo(32223), --BS["Crusader Aura"],
 };
 -- Buff templates
 PallyPower.Templates={
 	[1] = {
-		[1]=  {1, 2, 3, 4, 5, 6},
-		[2]=  {1, 2, 3, 4, 5, 6},
-		[3]=  {1, 2, 3, 4, 5, 6},
-		[4]=  {1, 2, 3, 4, 5, 6},
-		[5]=  {1, 2, 3, 4, 5, 6},
-		[6]=  {1, 2, 3, 4, 5, 6},
-		[7]=  {1, 2, 3, 4, 5, 6},
-		[8]=  {1, 2, 3, 4, 5, 6},
-		[9]=  {1, 2, 3, 4, 5, 6},
-		[10]= {1, 2, 3, 4, 5, 6},
-		[11]= {1, 2, 3, 4, 5, 6},
+		[1]=  {4},
+		[2]=  {4},
+		[3]=  {3, 1},
+		[4]=  {3, 1},
+		[5]=  {3, 2},
+		[6]=  {4},
+		[7]=  {4},
+		[8]=  {4},
+		[9]=  {4},
+		[10]= {3, 2},
 	},
 	[2] = {
-		[1]=  {1, 2, 3, 4, 5, 6},
-		[2]=  {1, 2, 3, 4, 5, 6},
-		[3]=  {1, 2, 3, 4, 5, 6},
-		[4]=  {1, 2, 3, 4, 5, 6},
-		[5]=  {1, 2, 3, 4, 5, 6},
-		[6]=  {1, 2, 3, 4, 5, 6},
-		[7]=  {1, 2, 3, 4, 5, 6},
-		[8]=  {1, 2, 3, 4, 5, 6},
-		[9]=  {1, 2, 3, 4, 5, 6},
-		[10]= {1, 2, 3, 4, 5, 6},
-		[11]= {1, 2, 3, 4, 5, 6},
+		[1]=  {4, 3, 2},
+		[2]=  {4, 3, 2},
+		[3]=  {1, 3, 4},
+		[4]=  {1, 3, 4},
+		[5]=  {1, 3, 2},
+		[6]=  {4, 3, 2},
+		[7]=  {4, 3, 1},
+		[8]=  {4, 3, 1},
+		[9]=  {1, 3, 4},
+		[10]= {2, 3, 1},
 	},
 	[3]= {
-		[1]=  {1, 2, 3, 4, 5, 6},
-		[2]=  {1, 2, 3, 4, 5, 6},
-		[3]=  {1, 2, 3, 4, 5, 6},
-		[4]=  {1, 2, 3, 4, 5, 6},
-		[5]=  {1, 2, 3, 4, 5, 6},
-		[6]=  {1, 2, 3, 4, 5, 6},
-		[7]=  {1, 2, 3, 4, 5, 6},
-		[8]=  {1, 2, 3, 4, 5, 6},
-		[9]=  {1, 2, 3, 4, 5, 6},
-		[10]= {1, 2, 3, 4, 5, 6},
-		[11]= {1, 2, 3, 4, 5, 6},
+		[1]=  {4, 2, 3, 5, 6},
+		[2]=  {4, 2, 3, 5, 6},
+		[3]=  {1, 4, 3, 5, 6},
+		[4]=  {2, 4, 3, 1},
+		[5]=  {1, 2, 3, 4},
+		[6]=  {2, 4, 3, 1},
+		[7]=  {1, 4, 3, 5, 6},
+		[8]=  {1, 4, 3, 5, 6},
+		[9]=  {2, 4, 3, 1},
+		[10]= {2, 1, 3, 4},
 	},
 	[4]= {
-		[1]=  {1, 2, 3, 4, 5, 6},
-		[2]=  {1, 2, 3, 4, 5, 6},
-		[3]=  {1, 2, 3, 4, 5, 6},
-		[4]=  {1, 2, 3, 4, 5, 6},
-		[5]=  {1, 2, 3, 4, 5, 6},
-		[6]=  {1, 2, 3, 4, 5, 6},
-		[7]=  {1, 2, 3, 4, 5, 6},
-		[8]=  {1, 2, 3, 4, 5, 6},
-		[9]=  {1, 2, 3, 4, 5, 6},
-		[10]= {1, 2, 3, 4, 5, 6},
-		[11]= {1, 2, 3, 4, 5, 6},
+		[1]=  {2, 4, 3, 5, 6},
+		[2]=  {2, 4, 3, 5, 6},
+		[3]=  {1, 4, 3, 5, 6},
+		[4]=  {1, 2, 4, 3, 5, 6},
+		[5]=  {1, 2, 4, 3, 5, 6},
+		[6]=  {2, 1, 4, 3, 5, 6},
+		[7]=  {1, 4, 3, 5, 6},
+		[8]=  {1, 4, 3, 5, 6},
+		[9]=  {1, 2, 4, 3, 5, 6},
+		[10]= {2, 1, 4, 3, 5, 6},
+	},
+	[5]= {
+		[1]=  {2, 4, 3, 5, 6},
+		[2]=  {2, 4, 3, 5, 6},
+		[3]=  {1, 4, 3, 5, 6},
+		[4]=  {1, 2, 4, 3, 5, 6},
+		[5]=  {1, 2, 4, 3, 5, 6},
+		[6]=  {2, 1, 4, 3, 5, 6},
+		[7]=  {1, 4, 3, 5, 6},
+		[8]=  {1, 4, 3, 5, 6},
+		[9]=  {1, 2, 4, 3, 5, 6},
+		[10]=  {2, 1, 4, 3, 5, 6},
+	},
+	[6]= {
+		[1]=  {2, 4, 3, 5, 6},
+		[2]=  {2, 4, 3, 5, 6},
+		[3]=  {1, 4, 3, 5, 6},
+		[4]=  {1, 2, 4, 3, 5, 6},
+		[5]=  {1, 2, 4, 3, 5, 6},
+		[6]=  {2, 1, 4, 3, 5, 6},
+		[7]=  {1, 4, 3, 5, 6},
+		[8]=  {1, 4, 3, 5, 6},
+		[9]=  {1, 2, 4, 3, 5, 6},
+		[10]=  {2, 1, 4, 3, 5, 6},
 	},
 }
 -- Layouts
@@ -401,19 +428,6 @@ PallyPower.Layouts = {
 								},
 							[10] = {
 									x = 0, y = -9,
-									p = { 
-											[1] = {x = 1, y = 0},
-											[2] = {x = 1, y = -1},
-											[3] = {x = 1, y = -2},
-											[4] = {x = 1, y = -3},
-											[5] = {x = 1, y = -4},
-											[6] = {x = 1, y = -5},
-											[7] = {x = 1, y = -6},
-											[8] = {x = 1, y = -7},
-										},
-								},
-							[11] = {
-									x = 0, y = -10,
 									p = { 
 											[1] = {x = 1, y = 0},
 											[2] = {x = 1, y = -1},
@@ -563,19 +577,6 @@ PallyPower.Layouts = {
 											[8] = {x = -1, y = -7},
 										},
 								},
-							[11] = {
-									x = 0, y = -10,
-									p = { 
-											[1] = {x = -1, y = 0},
-											[2] = {x = -1, y = -1},
-											[3] = {x = -1, y = -2},
-											[4] = {x = -1, y = -3},
-											[5] = {x = -1, y = -4},
-											[6] = {x = -1, y = -5},
-											[7] = {x = -1, y = -6},
-											[8] = {x = -1, y = -7},
-										},
-								},
 		 		},
 				ab = {x = 0, y = 1},
     			rf = {x = 0, y = 2},
@@ -702,19 +703,6 @@ PallyPower.Layouts = {
 								},
 							[10] = {
 									x = 9, y = 0,
-									p = { 
-											[1] = {x = 0, y = -1},
-											[2] = {x = 0, y = -2},
-											[3] = {x = 0, y = -3},
-											[4] = {x = 0, y = -4},
-											[5] = {x = 0, y = -5},
-											[6] = {x = 0, y = -6},
-											[7] = {x = 0, y = -7},
-											[8] = {x = 0, y = -8},
-										},
-								},
-							[11] = {
-									x = 10, y = 0,
 									p = { 
 											[1] = {x = 0, y = -1},
 											[2] = {x = 0, y = -2},
@@ -863,19 +851,6 @@ PallyPower.Layouts = {
 											[8] = {x = 0, y = 8},
 										},
 								},
-							[11] = {
-									x = 10, y = 0,
-									p = { 
-											[1] = {x = 0, y = 1},
-											[2] = {x = 0, y = 2},
-											[3] = {x = 0, y = 3},
-											[4] = {x = 0, y = 4},
-											[5] = {x = 0, y = 5},
-											[6] = {x = 0, y = 6},
-											[7] = {x = 0, y = 7},
-											[8] = {x = 0, y = 8},
-										},
-								},
 		 		},
 				ab = {x = -1, y = 0},
     			rf = {x = -2, y = 0},
@@ -1002,19 +977,6 @@ PallyPower.Layouts = {
 								},
 							[10] = {
 									x = -9, y = 0,
-									p = { 
-											[1] = {x = 0, y = 1},
-											[2] = {x = 0, y = 2},
-											[3] = {x = 0, y = 3},
-											[4] = {x = 0, y = 4},
-											[5] = {x = 0, y = 5},
-											[6] = {x = 0, y = 6},
-											[7] = {x = 0, y = 7},
-											[8] = {x = 0, y = 8},
-										},
-								},
-							[11] = {
-									x = -10, y = 0,
 									p = { 
 											[1] = {x = 0, y = 1},
 											[2] = {x = 0, y = 2},
